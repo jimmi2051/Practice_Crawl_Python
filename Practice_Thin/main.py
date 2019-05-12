@@ -1,82 +1,94 @@
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from scipy import spatial
-list_text = []
-import support
-import sys, getopt, os, struct
-path_train = "../output/Train_Document_Set"
-path_test = "../output/Test_Document_Set"
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import neighbors, datasets
+import sys
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+
 path_train_idf = "../output_process/Train_Document_IDF/"
-test_train_idf = "../output_process/Test_Document_IDF/"
+path_test_idf = "../output_process/Test_Document_IDF/"
 
+def read_file(path):
+    result = []
+    with open(path, 'r') as file_input:
+        line = file_input.readline()
+        while line:
+            line_check = line.replace("\n","").strip()
+            if line_check == "0.         0.         0.         0.         0.         0.":
+                line = file_input.readline()
+                continue
+            result.append(line.replace("\n","").strip())
+            line = file_input.readline()   
+    return np.asarray(result)
 
-ERROR_PATH =u"""
-    Tệp Không Tồn Tại hoặc bị lỗi
-"""
-
-
-def bag_of_words_dense(list_text):
-    print('    Start handle list text with result is dense')
-    result = CountVectorizer()
-    return result.fit_transform(list_text).todense()
-
-def bag_of_words_vocabulary_(list_text):
-    print('    Start handle list text with result is vocabulary to compare with bm25')
-    result = CountVectorizer()
-    result.fit_transform(list_text)
-    return result.vocabulary_
-
-def TF_IDF_names(list_text):
-    print('    Start handle list text with result is names to compare with bm25')
-    tf = TfidfVectorizer(analyzer='word', ngram_range=(1, 3), min_df=0, stop_words='english')
-    tf_idf_matrix = tf.fit_transform(list_text)
-    feature_names = tf.get_feature_names()
-
-    return feature_names
-
-def TF_IDF_dense(list_text):
-    print('    Start handle list text with result is dense')
-    tf = TfidfVectorizer(analyzer='word', ngram_range=(1, 3), min_df=0, stop_words='english')
-    tf_idf_matrix = tf.fit_transform(list_text)
-    feature_names = tf.get_feature_names()
-    dense = tf_idf_matrix.todense()
-    return dense
-
-def run(path,avenue,outp):
-    check_url = support.check_path(path)
-    print('\nCHECK PATH AND APPEND FILE')
-    if(check_url):
-        list_path = support.add_path_file(path)
-        print('\nREAD FILES IN INPUT FOLDER: %s' % path)
-        for filess in list_path:
-            with open(filess, 'r') as file_input:  
-                data = file_input.readline()
-                print('    Read file ' + filess)
-                data_clean = support.handle_text(data)
-                list_text.append(data_clean) 
-        print("\nDONE READ FILE AND START WRITE FILE")
-        if(avenue == 2):
-            data_result = TF_IDF_dense(list_text)
-            print('    Start Write TF-IDF file')
-            with open(outp+'TF-IDF.txt', 'w') as file_output: 
-                for i in range(len(data_result)):
-                    j = i+1
-                    oupt = 'D' + str(j) +'.txt \n  '
-                    temp = " ".join(str(item) for item in data_result[i])
-                    temp = temp.replace('[','')
-                    temp = temp.replace(']','')
-                    oupt += temp
-                    oupt +='\n'
-                    file_output.write(oupt)
-        print("\nDONE 100%\n")
-    else:
-        print(ERROR_PATH)
-        sys.exit(2)
+def myweight(distances):
+    sigma2 = .5 # we can change this number
+    return np.exp(-distances**2/sigma2)
 
 def main(argv):
-    run(path_test,2,test_train_idf)
-    run(path_train,2,path_train_idf)
+    # x = read_file(path_train_idf+"TF-IDF.txt")
+    # y = read_file(path_train_idf+"TF-IDF-index.txt")
+    # print(x[1009][6])
+    # x_train, x_test,y_train,y_test = train_test_split(x,y,random_state = 0,test_size=0.3)
+    # knn = KNeighborsClassifier (n_neighbors=10)
+    # knn.fit(x_train,y_train)
+
+    # # neigh = NearestNeighbors(n_neighbors=5)
+    # # neigh.fit(x_train)
+    # # (distance, found_index) = neigh.kneighbors(x_test)
+    iris = datasets.load_iris()
+    iris_X = iris.data
+    iris_y = iris.target
+    print ('Number of classes: '+str(len(np.unique(iris_y)))) 
+    print ('Number of data points: '+str(len(iris_y)) )
+
+    print(iris_X)
+    print(iris_y)
+    print("\n")
+    X0 = iris_X[iris_y == 0,:]
+    print ('\nSamples from class 0:\n', X0[:5,:])
+
+    X1 = iris_X[iris_y == 1,:]
+    print('\nSamples from class 1:\n', X1[:5,:])
+
+    X2 = iris_X[iris_y == 2,:]
+    print('\nSamples from class 2:\n', X2[:5,:])
+    
+    X_train, X_test, y_train, y_test = train_test_split(
+        iris_X, iris_y, test_size=50)
+
+    print ("Training size: " +str(len(y_train)))
+    print ("Test size    : " +str(len(y_test)))
+
+    clf = neighbors.KNeighborsClassifier(n_neighbors = 1, p = 2)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    print ("Print results for 20 test data points:")
+    print ("Predicted labels: ", y_pred[20:40])
+    print ("Ground truth    : ", y_test[20:40])
+    print ("Accuracy of 1NN: "+ str((100*accuracy_score(y_test, y_pred))))
+
+    clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    print ("Accuracy of 10NN with major voting: "+ str((100*accuracy_score(y_test, y_pred))))
+
+    clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2, weights = 'distance')
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    print ("Accuracy of 10NN (1/distance weights): " +str((100*accuracy_score(y_test, y_pred))))
+
+    clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2, weights = myweight)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    print ("Accuracy of 10NN (customized weights): "+ str((100*accuracy_score(y_test, y_pred))))
+
     return
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
