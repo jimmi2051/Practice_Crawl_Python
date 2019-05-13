@@ -19,7 +19,6 @@ ERROR_PATH =u"""
     Tệp Không Tồn Tại hoặc bị lỗi
 """
 
-
 def bag_of_words_dense(list_text):
     print('    Start handle list text with result is dense')
     result = CountVectorizer()
@@ -47,6 +46,42 @@ def TF_IDF_dense(list_text):
     dense = tf_idf_matrix.todense()
     return dense
 
+def run_cosine(cosine_data, measure):
+    result = []
+    temp1 =""
+    output1 = ""
+    for i in range(len(cosine_data)):
+        x = []    
+        for j in range(len(cosine_data)):
+            x.append(1 - spatial.distance.cosine(cosine_data[i],cosine_data[j]))
+        result.append(x)
+    if(result != []):
+        with open('./output/' + measure + '_CosSim.txt', 'w') as file_output:
+            for i in range(len(result)):
+                temp1 = "".join(str(item).ljust(25) for item in result[i])
+                temp1 = temp1.replace('[','')
+                temp1 = temp1.replace(']','')
+                output1 += temp1
+                output1 +='\n\n'
+                file_output.write(output1) 
+            #file_output.write(" ".join(str(item) for item in result))
+    print("    Done to compare with cossin")
+
+def run_bm25(bm25_data, measure):
+    result = get_bm25_weights(bm25_data, n_jobs=-1)
+    temp1 =""
+    output1 = ""
+    with open('./output/' + measure + '_OkapiBM25.txt', 'w') as file_output: 
+        for i in range(len(result)):
+            temp1 = "".join(str(item).ljust(25) for item in result[i])
+            temp1 = temp1.replace('[','')
+            temp1 = temp1.replace(']','')
+            output1 += temp1
+            output1 +='\n\n'
+            file_output.write(output1)
+        #file_output.write("".join(str(item).ljust(25) for item in result))
+    print("    Done to compare with bm25")
+
 def run(path,avenue,outp,name_file):
     check_url = support.check_path(path)
     print('\nCHECK PATH AND APPEND FILE')
@@ -56,9 +91,11 @@ def run(path,avenue,outp,name_file):
         for filess in list_path:
             with open(filess, 'r') as file_input:  
                 data = file_input.readline()
+                while data:
+                    data_clean = support.handle_text(data)
+                    list_text.append(data_clean)
+                    data = file_input.readline() 
                 print('    Read file ' + filess)
-                data_clean = support.handle_text(data)
-                list_text.append(data_clean) 
         print("\nDONE READ FILE AND START WRITE FILE")
         if(avenue == 2):
             data_result = TF_IDF_dense(list_text)
