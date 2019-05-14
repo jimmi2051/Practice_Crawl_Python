@@ -5,12 +5,19 @@ from .. import support
 class ThreadsSpider(scrapy.Spider):
     name = "threads"
     folder_path = "input"
-    folder_result = "output"
     title_list = []
     page_default = "https://vnexpress.net/"
     url_list = [] 
     flag_save = False
     index_count = 1
+    file_title = "output/title.txt"
+    file_label = "output/label.txt"
+    file_content = "output/content.txt"
+
+    def write_file(self,content,file_path):
+        with open(file_path,'a+') as file:
+            file.write(content+",")
+
     def start_requests(self):
         
         input_title = open("input/title.txt", 'r+')
@@ -22,67 +29,28 @@ class ThreadsSpider(scrapy.Spider):
     def getUrl(self,response):
         result = response.xpath('//*[@id="main_menu"]/a/@href').getall()
         titleToSearch = response.xpath('//*[@id="main_menu"]/a/text()').getall()
-        countUrl = 0
+        countUrl = 1
         
         for record in titleToSearch: 
             for title in self.title_list:
                 if title.rstrip().strip().lower() == record.rstrip().strip().lower():
                     if result[countUrl][0] == "/":
                         result[countUrl] = "https://vnexpress.net"+result[countUrl]
-                        for i in range(1,5):
+                        for i in range(1,10):
                             if i == 1:
                                 yield scrapy.Request(url=result[countUrl], callback=self.parse)
                             yield scrapy.Request(url=result[countUrl]+"-p"+str(i), callback=self.parse)
+                            self.write_file(str(countUrl),self.file_label)
                     else:
-                        for i in range(1,5):
+                        for i in range(1,10):
                             if i == 1:
                                 yield scrapy.Request(url=result[countUrl], callback=self.parse)
                             yield scrapy.Request(url=result[countUrl]+"/p"+str(i), callback=self.parse)
-                        # self.url_list.append(result[countUrl])
+                            self.write_file(str(countUrl),self.file_label)
+                    self.write_file(title.rstrip().strip().lower(),self.file_title)         
             countUrl=countUrl+1
-        # for url in self.url_list:
-        #     for i in range(1,5):
-        #         if i == 1:
-        #             yield scrapy.Request(url=url, callback=self.parse)
-        #         yield scrapy.Request(url=url+"-p"+str(i), callback=self.parse)
                            
     def parse(self, response):
-        page = response.url.split("/")
-        filename = ""
-        if page[len(page)-1][0]=="p":
-            filename = page[len(page)-2]+"-"+page[len(page)-1]+ ".html"
-        else:
-            filename = page[len(page)-1] + ".html"
-
-        title_list = response.xpath('//*[@class="title_news"]/a/text()').getall()
-        description_list= response.xpath('//*[@class="description"]/text()').getall()
-        title_page = response.xpath('//title/text()').get() + "\n"
-        new_title_page = str(self.index_count)+" "+ str(response.xpath('//title/text()').get()).strip() + "\n"
-        root_path = self.folder_result + "/Train_Document_Set/"
-        root_path_index = self.folder_result + "/Train_Document_Set_Index/"
-        # if self.flag_save: 
-        #     root_path = self.folder_result + "/Train_Document_Set/"
-        #     root_path_index = self.folder_result + "/Train_Document_Set_Index/"
-        # else:
-        #     root_path = self.folder_result + "/Test_Document_Set/"
-        #     root_path_index = self.folder_result + "/Test_Document_Set_Index/"
-        with open(root_path_index+"index.html",'a+') as f_index:
-            with open(root_path+filename, 'w+') as f:
-                f.write(title_page)
-                f_index.write(new_title_page)
-                self.index_count=self.index_count+1
-                for i in range(0,len(title_list)-1):
-                    article = "D"+str(i+1) + "\n"
-                    title = "Title: "+ support.remove_special_character(title_list[i].rstrip().strip()) + "\n"
-                    if i<len(description_list):
-                        description = "Description: " + support.remove_special_character(description_list[i].rstrip().strip()) + "\n"
-                    else:
-                        description = ""
-                    f.write(article)
-                    f.write(title)
-                    f.write(description)         
-        if self.flag_save:
-            self.flag_save = False
-        else:
-            self.flag_save = True
-        self.log('Saved file %s' % filename)
+        title_list = response.xpath('//*[@class="title_news"]/a/text()').get()
+        self.write_file(support.remove_special_character(title_list),self.file_content)       
+ 

@@ -16,7 +16,11 @@ def check_path(path):
         return True
     else:
         return False
-
+def check_file(file_path):
+    if(os.path.isfile(file_path)):
+        return True
+    else:
+        return False
 def add_path_file(path):
     list_path=[]
     for root,dirs,files in os.walk(path):
