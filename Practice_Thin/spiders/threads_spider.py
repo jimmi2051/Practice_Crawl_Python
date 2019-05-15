@@ -36,13 +36,13 @@ class ThreadsSpider(scrapy.Spider):
                 if title.rstrip().strip().lower() == record.rstrip().strip().lower():
                     if result[countUrl][0] == "/":
                         result[countUrl] = "https://vnexpress.net"+result[countUrl]
-                        for i in range(1,10):
+                        for i in range(1,15):
                             if i == 1:
                                 yield scrapy.Request(url=result[countUrl], callback=self.parse)
                             yield scrapy.Request(url=result[countUrl]+"-p"+str(i), callback=self.parse)
                             self.write_file(str(countUrl),self.file_label)
                     else:
-                        for i in range(1,10):
+                        for i in range(1,15):
                             if i == 1:
                                 yield scrapy.Request(url=result[countUrl], callback=self.parse)
                             yield scrapy.Request(url=result[countUrl]+"/p"+str(i), callback=self.parse)

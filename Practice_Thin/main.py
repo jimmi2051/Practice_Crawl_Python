@@ -104,7 +104,7 @@ def practice_example():
     X_train, X_test, y_train, y_test = train_test_split(
         iris_X, iris_y, test_size=50)
 
-
+    print(X_train,y_train)
 
     print ("Training size: " +str(len(y_train)))
     print ("Test size    : " +str(len(y_test)))
@@ -117,19 +117,19 @@ def practice_example():
     print ("Ground truth    : ", y_test[20:40])
     print ("Accuracy of 1NN: "+ str((100*accuracy_score(y_test, y_pred))))
 
-    clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2)
+    clf = neighbors.KNeighborsClassifier(n_neighbors = 1, p = 2)
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
     print ("Accuracy of 10NN with major voting: "+ str((100*accuracy_score(y_test, y_pred))))
 
-    clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2, weights = 'distance')
+    clf = neighbors.KNeighborsClassifier(n_neighbors = 1, p = 2, weights = 'distance')
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
     print ("Accuracy of 10NN (1/distance weights): " +str((100*accuracy_score(y_test, y_pred))))
 
-    clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2, weights = myweight)
+    clf = neighbors.KNeighborsClassifier(n_neighbors = 1, p = 2, weights = myweight)
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
@@ -137,10 +137,10 @@ def practice_example():
 
 
     #Practice
-    knn = neighbors.KNeighborsClassifier(n_neighbors=10)
+    knn = neighbors.KNeighborsClassifier(n_neighbors=1)
     knn.fit(X_train,y_train)
 
-    neigh = neighbors.NearestNeighbors(n_neighbors = 5)
+    neigh = neighbors.NearestNeighbors(n_neighbors = 1)
     neigh.fit(X_train)
     (distance, found_index) = neigh.kneighbors(X_test)
     print("Distance: \n",distance)
@@ -164,7 +164,7 @@ def practice_example():
     print("\n F1 Score:",f1)
 
     #Cross Value Score
-    knn_cv = neighbors.KNeighborsClassifier(n_neighbors=10)
+    knn_cv = neighbors.KNeighborsClassifier(n_neighbors=1)
     cv_scores = cross_val_score(knn_cv,iris_X,iris_y,cv=5)
     print(cv_scores)
 
@@ -191,7 +191,9 @@ def read_file_2(file_path):
             item_arr = []
             parse_string = file_text.split(",")
             for item in parse_string:
-                item_arr.append(float(item))
+                item=item.replace(", '\n'","")
+                item=item.replace("\n","")
+                item_arr.append((item))
             result.append(item_arr)
             file_text=file_input.readline()
     return result
@@ -206,22 +208,33 @@ def read_title(file_path):
         return result
 def main(argv):
     # practice_example()
-    X = read_file_2("../output_process/TF_IDF.txt")
-    print(X)
+    temp_X = read_file_2("../output_process/TF_IDF.txt")
+    print(np.asarray(temp_X).shape)
+    temp_array = temp_X[:40]
+    print(temp_array)
+    # # print()
     # X = np.asarray(temp_X)
+    # # print(X)
     # temp_Y = read_title("../output/label.txt")
     # Y = np.asarray(temp_Y)
+
     # X.reshape(X.shape[1:])
     # X = X.transpose()
     # print(X.shape)
+    # print(temp_Y)
     # X_train, X_test, y_train, y_test = train_test_split(
-    #     X, Y, test_size=50)
+    #     X, y,random_state=0, test_size=0.3)
+    # # print(X_train)
 
+    # X_train = np.asarray(X_train)
+    # y_train = np.asarray(y_train)
 
-
+    # print(X_train.shape)
+    # print(y_train.shape)
     # print ("Training size: " +str(len(y_train)))
     # print ("Test size    : " +str(len(y_test)))
-    # clf = neighbors.KNeighborsClassifier(n_neighbors = 1, p = 2)
+    # print(X_train,y_train)
+    # clf = neighbors.KNeighborsClassifier(n_neighbors = 1)
     # clf.fit(X_train, y_train)
     # y_pred = clf.predict(X_test)
 
@@ -230,19 +243,19 @@ def main(argv):
     # print ("Ground truth    : ", y_test[20:40])
     # print ("Accuracy of 1NN: "+ str((100*accuracy_score(y_test, y_pred))))
 
-    # clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2)
+    # clf = neighbors.KNeighborsClassifier(n_neighbors = 1, p = 2)
     # clf.fit(X_train, y_train)
     # y_pred = clf.predict(X_test)
 
     # print ("Accuracy of 10NN with major voting: "+ str((100*accuracy_score(y_test, y_pred))))
 
-    # clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2, weights = 'distance')
+    # clf = neighbors.KNeighborsClassifier(n_neighbors = 1, p = 2, weights = 'distance')
     # clf.fit(X_train, y_train)
     # y_pred = clf.predict(X_test)
 
     # print ("Accuracy of 10NN (1/distance weights): " +str((100*accuracy_score(y_test, y_pred))))
 
-    # clf = neighbors.KNeighborsClassifier(n_neighbors = 10, p = 2, weights = myweight)
+    # clf = neighbors.KNeighborsClassifier(n_neighbors = 1, p = 2, weights = myweight)
     # clf.fit(X_train, y_train)
     # y_pred = clf.predict(X_test)
 
@@ -250,10 +263,10 @@ def main(argv):
 
 
     # #Practice
-    # knn = neighbors.KNeighborsClassifier(n_neighbors=10)
+    # knn = neighbors.KNeighborsClassifier(n_neighbors=1)
     # knn.fit(X_train,y_train)
 
-    # neigh = neighbors.NearestNeighbors(n_neighbors = 5)
+    # neigh = neighbors.NearestNeighbors(n_neighbors = 1)
     # neigh.fit(X_train)
     # (distance, found_index) = neigh.kneighbors(X_test)
     # print("Distance: \n",distance)
@@ -276,25 +289,25 @@ def main(argv):
     # f1 = f1_score(y_test,y_pred,average=None)
     # print("\n F1 Score:",f1)
 
-    # #Cross Value Score
-    # knn_cv = neighbors.KNeighborsClassifier(n_neighbors=10)
-    # cv_scores = cross_val_score(knn_cv,X,Y,cv=5)
-    # print(cv_scores)
+    # # #Cross Value Score
+    # # knn_cv = neighbors.KNeighborsClassifier(n_neighbors=4)
+    # # cv_scores = cross_val_score(knn_cv,X,y,cv=2)
+    # # print(cv_scores)
 
-    # mean_cv_scores = np.mean(cv_scores)
-    # print("cv_scores mean: {}".format(mean_cv_scores))
+    # # mean_cv_scores = np.mean(cv_scores)
+    # # print("cv_scores mean: {}".format(mean_cv_scores))
 
     # np.set_printoptions(precision=2)
 
-    # # Plot non-normalized confusion matrix
-    # plot_confusion_matrix(y_test, y_pred, classes=class_names,
-    #                     title='Confusion matrix, without normalization')
+    # # # Plot non-normalized confusion matrix
+    # # plot_confusion_matrix(y_test, y_pred, classes=class_names,
+    # #                     title='Confusion matrix, without normalization')
 
-    # # Plot normalized confusion matrix
-    # plot_confusion_matrix(y_test, y_pred, classes=class_names, normalize=True,
-    #                     title='Normalized confusion matrix')
+    # # # Plot normalized confusion matrix
+    # # plot_confusion_matrix(y_test, y_pred, classes=class_names, normalize=True,
+    # #                     title='Normalized confusion matrix')
 
-    # plt.show()
+    # # plt.show()
     return
 
 if __name__ == "__main__":
